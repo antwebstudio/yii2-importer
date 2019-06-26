@@ -1,0 +1,54 @@
+{
+    "name": "antweb/yii2-importer",
+    "description": "Yii2 Module",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Hui Yang",
+            "email": "chy1988@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=5.4.0",
+        "yiisoft/yii2": "~2.0.0",
+		"inspirenmy/yii2-core" : "*",
+		"ruskid/yii2-csv-importer" : "*"
+	},
+    "require-dev": {
+        "yiisoft/yii2-codeception": "~2.0.0",
+        "yiisoft/yii2-gii": "~2.0.0",
+        "yiisoft/yii2-faker": "~2.0.0",
+        "codeception/codeception": "^3.0"
+	},
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        },
+		{
+			"type": "composer",
+			"url": "http://packagist.antwebstudio.com"
+		}
+	],
+	"scripts": {
+		"post-install-cmd": "@setup",
+		"migrate-test" : "@php tests/bin/yii migrate --interactive=0 --migrationPath=@yii/rbac/migrations,@common/migrations/db,@tests/migrations/db",
+		"test" : [
+			"@setup", 
+			"@run-test"
+		],
+		"yii": "@php ./tests/bin/yii",
+		"setup": [
+			"@php ./tests/bin/yii module/enable category",
+			"@migrate-test"
+		],
+		"run-test" : "@php ./vendor/codeception/codeception/codecept run unit"
+	},
+    "autoload": {
+        "psr-4": {
+			"ant\\" : "src",
+			"tests\\" : "tests"
+		}
+    }
+}
