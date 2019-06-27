@@ -22,8 +22,7 @@ class ImportController extends \yii\web\Controller {
     }
 
     public function actionIndex($type = null) {
-        $model = $this->module->getFormModel('import');
-        $model->type = $type;
+        $model = $this->module->getFormModel('import', ['type' => $type]);
 
         if ($model->load(\Yii::$app->request->post())) {
             $dataProvider = $model->readAsDataProvider(0, 10);

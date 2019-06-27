@@ -7,9 +7,12 @@ use ruskid\csvimporter\CSVReader;
 use ruskid\csvimporter\CSVImporter;
 
 class ImportForm extends \yii\base\Model {
+	const SCENARIO_IMPORT = 'import';
+	
     public $file;
     public $importTo;
 
+	public $fileBasePath = '@storage/web/source';
     public $filePath;
     public $fileBaseUrl;
 
@@ -18,7 +21,7 @@ class ImportForm extends \yii\base\Model {
     public $step;
     public $type = 'default';
 
-    public $importStrategy = 'common\modules\importer\components\ARImportStrategy';
+    public $importStrategy = 'ant\importer\components\ARImportStrategy';
 	
 	public $timeout = 300; // seconds
 
@@ -41,10 +44,15 @@ class ImportForm extends \yii\base\Model {
 
     public function rules() {
         return [
+			[['importTo'], 'required', 'on' => self::SCENARIO_IMPORT],
             [['file'], 'required'],
             [['file', 'importTo', 'step'], 'safe'],
         ];
     }
+	
+	public function init() {
+		if (!isset($this->configs[$this->type])) throw new \Exception('Import type "'.$this->type.'" is not setup. ('.implode(', ', array_keys($this->configs)).')');
+	}
 
     public function getUploadedFilePath() {
         return $this->file['path'];
@@ -86,7 +94,12 @@ class ImportForm extends \yii\base\Model {
     }
 
     public function process() {
+		
         if ($this->step == 'confirm') {
+			$this->scenario = self::SCENARIO_IMPORT;
+			
+			if (!$this->validate()) return false;
+			
             $filename = $this->getBasePath() . '/'.$this->getUploadedFilePath();
 
             $transaction = \Yii::$app->db->beginTransaction();
@@ -114,6 +127,8 @@ class ImportForm extends \yii\base\Model {
                 throw $ex;
             }
         }
+		
+		if (!$this->validate()) return false;
     }
 
     public function getLastModel() {
@@ -165,8 +180,10 @@ class ImportForm extends \yii\base\Model {
             if (isset($importTo) && trim($importTo) != '') {
 
                 // If importTo = alias.attribute
-                if (strpos($importTo, '.') !== false) {
-                    list($alias, $attribute) = explode('.', $importTo);
+                if (false !== $pos = strpos($importTo, '.')) {
+					$alias = substr($importTo, 0, $pos);
+					$attribute = substr($importTo, $pos + 1);
+                    //list($alias, $attribute) = explode('.', $importTo);
                 } else if (count($this->models) > 1) {
                     throw new \Exception('Ambigous config: "'.$configName.'" model class name. ');
                 }
@@ -214,6 +231,6 @@ class ImportForm extends \yii\base\Model {
     }
 
     protected function getBasePath() {
-        return Yii::getAlias('@storage/web/source');
+        return Yii::getAlias($this->fileBasePath);
     }
 }

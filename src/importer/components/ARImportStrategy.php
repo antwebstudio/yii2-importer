@@ -22,14 +22,16 @@ class ARImportStrategy extends \ruskid\csvimporter\ARImportStrategy {
                         }
 
                         //Set value to the model
-                        $this->lastModel->{$config['attribute']} =  $value;
+						\common\helpers\ArrayHelper::setValue($this->lastModel, $config['attribute'], $value);
                     }
                 }
                 //Check if model is unique and saved with success
-                if (!$this->lastModel->validate()) throw new \Exception(print_r($this->lastModel->errors, 1));
+                if (!$this->lastModel->validate()) throw new \Exception(print_r($this->lastModel->errors, 1).print_r($row, 1));
 
                 if ($this->isActiveRecordUnique($uniqueAttributes) && $this->lastModel->save()) {
-                    $importedPks[] = $this->lastModel->primaryKey;
+					if (isset($this->lastModel->primaryKey)) {
+						$importedPks[] = $this->lastModel->primaryKey;
+					}
                 } else {
                     throw new \Exception('Failed import');
                 }
