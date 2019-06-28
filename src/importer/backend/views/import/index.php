@@ -39,12 +39,14 @@ use trntv\filekit\widget\Upload;
                 $columns[] = [
                     'header' => $model->getImportedDataHeader($i).'<br/>'.$widget,
                     'attribute' => $i,
+					'headerOptions' => ['style' => 'min-width: 150px'],
                 ];
             }
         ?>
         <?= \yii\grid\GridView::widget([
             'dataProvider' => $dataProvider,
             'columns' => $columns,
+			'options' => ['style' => 'overflow-x: auto'],
         ]) ?>
 
         <?= Html::submitButton('Import', ['class' => 'btn btn-primary']) ?>

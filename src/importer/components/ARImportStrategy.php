@@ -1,20 +1,22 @@
 <?php
 namespace ant\importer\components;
 
+use common\helpers\ArrayHelper;
+
 class ARImportStrategy extends \ruskid\csvimporter\ARImportStrategy {
     public $lastModel;
 
     public function import(&$data) {
         $importedPks = [];
         foreach ($data as $row) {
-            $skipImport = isset($this->skipImport) ? call_user_func($this->skipImport, $row) : false;
+            $skipImport = isset($this->skipImport) ? call_user_func_array($this->skipImport, [$row]) : false;
             if (!$skipImport) {
                 /* @var $model \yii\db\ActiveRecord */
                 $this->lastModel = \Yii::createObject($this->className);
                 $uniqueAttributes = [];
                 foreach ($this->configs as $config) {
                     if (isset($config['attribute']) && trim($config['attribute']) != '') {
-                        $value = call_user_func($config['value'], $row);
+                        $value = call_user_func_array($config['value'], [$row, $this->lastModel]);
 
                         //Create array of unique attributes
                         if (isset($config['unique']) && $config['unique']) {
@@ -22,7 +24,12 @@ class ARImportStrategy extends \ruskid\csvimporter\ARImportStrategy {
                         }
 
                         //Set value to the model
-						\common\helpers\ArrayHelper::setValue($this->lastModel, $config['attribute'], $value);
+						if (isset($value)) {
+							$currentValue = (array) ArrayHelper::getValue($this->lastModel, $config['attribute']);
+							if (is_array($value)) $value = ArrayHelper::merge($currentValue, $value);
+							ArrayHelper::setValue($this->lastModel, $config['attribute'], $value);
+							//if (is_array($value)) throw new \Exception(print_r($value,1).$config['attribute'].print_r($this->lastModel->product->tagsValue,1));
+						}
                     }
                 }
                 //Check if model is unique and saved with success

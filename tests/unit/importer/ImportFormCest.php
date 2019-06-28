@@ -34,7 +34,7 @@ class ImportFormCest
     public function testProcessForFormModel(UnitTester $I)
     {
 		$expectedRecords = 5;
-		$beforeCount = ImportFormCestTestModel::find()->count();
+		ImportFormCestTestModel::deleteAll();
 		
 		$form = new ImportForm([
 			'fileBasePath' => '@tests/fixtures/file',
@@ -44,6 +44,9 @@ class ImportFormCest
 			'configs' => [
 				'default' => [
 					'default.testModel.name',
+					'default.testModel.array' => function($value) {
+						return explode(',', $value);
+					},
 				],
 			],
 		]);
@@ -53,13 +56,19 @@ class ImportFormCest
 			'importTo'=> [
 				'',
 				'',
-				'',
 				'default.testModel.name',
+				'',
+				'default.testModel.array',
+				'default.testModel.array',
 			],
 		];
 		if ($form->process() === false) throw new \Exception(print_r($form->errors, 1));
 		
-		$I->assertEquals($beforeCount + $expectedRecords, ImportFormCestTestModel::find()->count());
+		$I->assertEquals(['Video', 'Corporate'], $form->lastModel->testModel->array);
+		
+		$records = ImportFormCestTestModel::find()->all();
+		$I->assertEquals($expectedRecords, ImportFormCestTestModel::find()->count());
+		$I->assertEquals('Nathaniel & Felicia Wedding Highlight', $records[0]->name);
     }
 	
 	public function testGetImportedCount(UnitTester $I) {
@@ -94,6 +103,8 @@ class ImportFormCest
 }
 
 class ImportFormCestTestModel extends \yii\db\ActiveRecord {
+	public $array;
+	
 	public static function tableName() {
 		return '{{%test}}';
 	}

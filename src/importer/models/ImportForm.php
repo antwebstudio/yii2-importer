@@ -192,13 +192,13 @@ class ImportForm extends \yii\base\Model {
 
                 if (isset($config[$importTo]) && is_callable($config[$importTo])) {
                     $callback = $config[$importTo];
-                    $valueCallback = function($line) use ($callback, $i) {
-                        return call_user_func_array($callback, [trim($line[$i])]);
+                    $valueCallback = function($line, $model = null) use ($callback, $i) {
+                        return call_user_func_array($callback, [trim($line[$i]), $model]);
                     };
                 } else if (isset($config[$importTo]['value']) && is_callable($config[$importTo]['value'])) {
                     $callback = $config[$importTo]['value'];
-                    $valueCallback = function($line) use ($callback, $i) {
-                        return call_user_func_array($callback, [trim($line[$i])]);
+                    $valueCallback = function($line, $model = null) use ($callback, $i) {
+                        return call_user_func_array($callback, [trim($line[$i]), $model]);
                     };
                 } else {
                     $valueCallback = function($line) use ($i) {
