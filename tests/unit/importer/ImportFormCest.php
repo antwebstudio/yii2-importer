@@ -116,7 +116,7 @@ class ImportFormCestTestModel extends \yii\db\ActiveRecord {
 	}
 }
 
-class ImportFormCestFormModel extends \common\base\FormModel {
+class ImportFormCestFormModel extends \ant\base\FormModel {
 	public $name;
 	
 	public function models() {

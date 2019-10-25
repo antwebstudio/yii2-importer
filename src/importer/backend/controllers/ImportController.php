@@ -1,7 +1,7 @@
 <?php
 namespace ant\importer\backend\controllers;
 
-use common\modules\importer\models\ImportForm;
+use ant\importer\models\ImportForm;
 use trntv\filekit\actions\DeleteAction;
 use trntv\filekit\actions\UploadAction;
 

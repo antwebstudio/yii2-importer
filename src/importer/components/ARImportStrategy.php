@@ -1,7 +1,7 @@
 <?php
 namespace ant\importer\components;
 
-use common\helpers\ArrayHelper;
+use ant\helpers\ArrayHelper;
 
 class ARImportStrategy extends \ruskid\csvimporter\ARImportStrategy {
     public $lastModel;

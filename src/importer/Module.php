@@ -11,7 +11,7 @@ class Module extends \yii\base\Module
     public function behaviors() {
         return [
             [
-                'class' => 'common\behaviors\ConfigurableModuleBehavior',
+                'class' => 'ant\behaviors\ConfigurableModuleBehavior',
                 'formModels' => [
                     'import' => [
                         'class' => \ant\importer\models\ImportForm::class,
