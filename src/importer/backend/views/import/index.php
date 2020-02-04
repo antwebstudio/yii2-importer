@@ -1,7 +1,8 @@
 <?php
 use yii\widgets\ActiveForm;
 use yii\helpers\Html;
-use trntv\filekit\widget\Upload;
+use ant\file\widgets\Upload;
+use ant\widgets\Alert;
 ?>
 
 <?php if (!\Yii::$app->request->post()): ?>
@@ -53,21 +54,11 @@ use trntv\filekit\widget\Upload;
     <?php ActiveForm::end() ?>
 <?php elseif ($model->step == 'confirm'): ?>
     <?php if ($model->lastModel->hasErrors()): ?>
-        <?= \yii\bootstrap\Alert::widget([
-            'body' => Html::errorSummary($model->lastModel),
-            'options' => [
-                'class' => 'alert-error',
-            ],
-        ]) ?>
+        <?= Alert::widget() ?>
     <?php else: ?>
-        <?= \yii\bootstrap\Alert::widget([
-            'body' => 'Success',
-            'options' => [
-                'class' => 'alert-success',
-            ],
-        ]) ?>
+        <?= Alert::widget() ?>
     <?php endif ?>
     <div>Total data count: <?= $model->dataProvider->totalCount ?></div>
     <div>Imported count: <?= $model->importedCount ?></div>
-    <?= Html::a('OK', ['/importer/import', 'type' => $model->type], ['class' => 'btn btn-primary']) ?>
+    <?= Html::a('OK', ['import', 'type' => $model->type], ['class' => 'btn btn-primary']) ?>
 <?php endif ?>
