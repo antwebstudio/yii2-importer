@@ -40,7 +40,7 @@ class ARImportStrategy extends \ruskid\csvimporter\ARImportStrategy {
 						$importedPks[] = $this->lastModel->primaryKey;
 					}
                 } else {
-                    throw new \Exception('Failed import');
+                    throw new \Exception('Failed import. '.\yii\helpers\Html::errorSummary($this->lastModel));
                 }
             }
         }

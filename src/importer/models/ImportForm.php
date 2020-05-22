@@ -124,7 +124,8 @@ class ImportForm extends \yii\base\Model {
                 
                 $transaction->rollback();
 
-                throw $ex;
+				Yii::$app->session->setFlash('error', $ex->getMessage());
+                //throw $ex;
             }
         }
 		
