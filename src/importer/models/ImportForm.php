@@ -7,7 +7,10 @@ use ruskid\csvimporter\CSVReader;
 use ruskid\csvimporter\CSVImporter;
 
 class ImportForm extends \yii\base\Model {
-	const SCENARIO_IMPORT = 'import';
+    const SCENARIO_IMPORT = 'import';
+    
+    const EVENT_BEFORE_IMPORT = 'beforeImport';
+    const EVENT_ERROR = 'error';
 	
     public $file;
     public $importTo;
@@ -102,6 +105,9 @@ class ImportForm extends \yii\base\Model {
 			
             $filename = $this->getBasePath() . '/'.$this->getUploadedFilePath();
 
+            $this->acquireLock();
+            $this->trigger(self::EVENT_BEFORE_IMPORT);
+
             $transaction = \Yii::$app->db->beginTransaction();
 
             $strategyConfig = $this->processConfig($this->type);
@@ -123,6 +129,8 @@ class ImportForm extends \yii\base\Model {
                 $this->_lastModel = $strategy->lastModel;
                 
                 $transaction->rollback();
+
+                $this->trigger(self::EVENT_ERROR);
 
 				Yii::$app->session->setFlash('error', $ex->getMessage());
                 //throw $ex;
@@ -159,6 +167,13 @@ class ImportForm extends \yii\base\Model {
 
     public function getImportedCount() {
         return count($this->_imported);
+    }
+
+    protected function acquireLock() {        
+        $mutex = Yii::$app->mutex;
+        $mutexName = 'import-'.get_called_class();
+        
+        if (!$mutex->acquire($mutexName)) throw new \Exception('Another import process is running, please try again later. ');
     }
 
     protected function getClassName($alias) {

@@ -60,5 +60,5 @@ use ant\widgets\Alert;
     <?php endif ?>
     <div>Total data count: <?= $model->dataProvider->totalCount ?></div>
     <div>Imported count: <?= $model->importedCount ?></div>
-    <?= Html::a('OK', ['import', 'type' => $model->type], ['class' => 'btn btn-primary']) ?>
+    <?= Html::a('OK', ['/importer/backend/import', 'type' => $model->type], ['class' => 'btn btn-primary']) ?>
 <?php endif ?>
