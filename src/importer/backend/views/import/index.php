@@ -4,10 +4,23 @@ use yii\helpers\Html;
 use ant\file\widgets\Upload;
 use ant\widgets\Alert;
 ?>
+<?php if ($model->getIntroduction() != ''): ?>
+    <div class="alert alert-info">
+        <?= $model->getIntroduction() ?>
+    </div>
+<?php endif ?>
+
+<?= Html::errorSummary($model, ['class' => 'alert alert-danger']) ?>
 
 <?php if (!\Yii::$app->request->post()): ?>
     <?php $form = ActiveForm::begin() ?>
         <?= $form->field($model, 'step')->hiddenInput(['value' => 'read'])->label(false) ?>
+
+        <?= $form->field($model, 'mode')->dropDownList([
+            'mix' => 'Have new and old record',
+            'create' => 'All are new records only', 
+            'update' => 'All are old records only',
+        ]) ?>
 
         <?= $form->field($model, 'file')->widget(
             Upload::classname(),
@@ -21,6 +34,7 @@ use ant\widgets\Alert;
 <?php elseif ($model->step == 'read'): ?>
     <?php $form = ActiveForm::begin() ?>
         <?= $form->field($model, 'step')->hiddenInput(['value' => 'confirm'])->label(false) ?>
+        <?= $form->field($model, 'mode')->hiddenInput()->label(false) ?>
 
         <div style="display: none;">
             <?= $form->field($model, 'file')->widget(
@@ -53,11 +67,8 @@ use ant\widgets\Alert;
         <?= Html::submitButton('Import', ['class' => 'btn btn-primary']) ?>
     <?php ActiveForm::end() ?>
 <?php elseif ($model->step == 'confirm'): ?>
-    <?php if ($model->lastModel->hasErrors()): ?>
-        <?= Alert::widget() ?>
-    <?php else: ?>
-        <?= Alert::widget() ?>
-    <?php endif ?>
+    <?= Alert::widget() ?>
+    
     <div>Total data count: <?= $model->dataProvider->totalCount ?></div>
     <div>Imported count: <?= $model->importedCount ?></div>
     <?= Html::a('OK', ['/importer/backend/import', 'type' => $model->type], ['class' => 'btn btn-primary']) ?>

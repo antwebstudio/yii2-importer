@@ -1,6 +1,7 @@
 <?php
 namespace ant\importer\backend\controllers;
 
+use Yii;
 use ant\importer\models\ImportForm;
 use trntv\filekit\actions\DeleteAction;
 use trntv\filekit\actions\UploadAction;
@@ -26,7 +27,9 @@ class ImportController extends \yii\web\Controller {
 
         if ($model->load(\Yii::$app->request->post())) {
             $dataProvider = $model->readAsDataProvider(0, 10);
-            $model->process();
+            if ($model->process()) {
+                Yii::$app->session->setFlash('success', 'Imported successfully. ');
+            }
         }
 
         return $this->render($this->action->id, [

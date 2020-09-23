@@ -11,18 +11,24 @@ class ImportForm extends \yii\base\Model {
     
     const EVENT_BEFORE_IMPORT = 'beforeImport';
     const EVENT_ERROR = 'error';
+
+    const MODE_CREATE = 'create';
+    const MODE_UPDATE = 'update';
+    const MODE_MIX = 'mix';
 	
     public $file;
     public $importTo;
 
+    public $introduction = []; // Steps name as key
 	public $fileBasePath = '@storage/web/source';
     public $filePath;
     public $fileBaseUrl;
 
     public $configs = [];
     public $models = [];
-    public $step;
+    public $step = 'first'; // first / read / confirm
     public $type = 'default';
+    public $mode = 'mix'; // create / update / mix
 
     public $importStrategy = 'ant\importer\components\ARImportStrategy';
 	
@@ -33,6 +39,7 @@ class ImportForm extends \yii\base\Model {
     protected $_header;
     protected $_imported;
     protected $_lastModel;
+    protected $_strategy;
     
     public function behaviors() {
         return [
@@ -55,7 +62,11 @@ class ImportForm extends \yii\base\Model {
 	
 	public function init() {
 		if (!isset($this->configs[$this->type])) throw new \Exception('Import type "'.$this->type.'" is not setup. ('.implode(', ', array_keys($this->configs)).')');
-	}
+    }
+    
+    public function getIntroduction() {
+        return $this->introduction[$this->step] ?? '';
+    }
 
     public function getUploadedFilePath() {
         return $this->file['path'];
@@ -111,7 +122,7 @@ class ImportForm extends \yii\base\Model {
             $transaction = \Yii::$app->db->beginTransaction();
 
             $strategyConfig = $this->processConfig($this->type);
-            $strategy = Yii::createObject($strategyConfig['class'], [$strategyConfig]);
+            $this->_strategy = $strategy = Yii::createObject($strategyConfig['class'], [$strategyConfig]);
 
             try {
                 $this->_imported = [];
@@ -135,9 +146,15 @@ class ImportForm extends \yii\base\Model {
 				Yii::$app->session->setFlash('error', $ex->getMessage());
                 //throw $ex;
             }
+            return !$this->hasErrors();
         }
 		
-		if (!$this->validate()) return false;
+        if (!$this->validate()) return false;
+        
+    }
+
+    public function getImportStrategy() {
+        return $this->_strategy;
     }
 
     public function getLastModel() {
@@ -229,11 +246,24 @@ class ImportForm extends \yii\base\Model {
                 ];
             }
         }
-        return [
-            'class' => $this->importStrategy,
-            'className' => $className,
-            'configs' => $importerConfigs,
-        ];
+
+        if (is_array($this->importStrategy)) {
+            $strategy = $this->importStrategy;
+            $strategy['scenario'] = $this->scenario;
+            $strategy['importForm'] = $this;
+            $strategy['className'] = $className;
+            $strategy['configs'] = $importerConfigs;
+
+            return $strategy;
+        } else {
+            return [
+                'class' => $this->importStrategy,
+                'scenario' => $this->scenario,
+                'importForm' => $this,
+                'className' => $className,
+                'configs' => $importerConfigs,
+            ];
+        }
     }
 
     protected function getReader($filename, $startFromLine = 1) {
